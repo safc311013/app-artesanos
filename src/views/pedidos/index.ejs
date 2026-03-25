@@ -1,0 +1,106 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Pedidos</h1>
+    <p class="page-subtitle">Lista de pedidos registrados</p>
+  </div>
+
+  <div class="page-actions">
+    <a href="/pedidos/nuevo" class="btn btn-primary">Nuevo pedido</a>
+  </div>
+</div>
+
+<div class="card filter-card">
+  <div class="card-body">
+    <form method="GET" action="/pedidos" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Buscar</label>
+        <input
+          type="text"
+          name="q"
+          class="form-control"
+          placeholder="Folio o nombre del artesano"
+          value="<%= filtros?.q || '' %>"
+        >
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Estado</label>
+        <select name="estado" class="form-select">
+          <option value="">Todos</option>
+          <option value="PENDIENTE" <%= filtros?.estado === "PENDIENTE" ? "selected" : "" %>>PENDIENTE</option>
+          <option value="EN_PROCESO" <%= filtros?.estado === "EN_PROCESO" ? "selected" : "" %>>EN_PROCESO</option>
+          <option value="TERMINADO" <%= filtros?.estado === "TERMINADO" ? "selected" : "" %>>TERMINADO</option>
+          <option value="ENTREGADO" <%= filtros?.estado === "ENTREGADO" ? "selected" : "" %>>ENTREGADO</option>
+          <option value="CANCELADO" <%= filtros?.estado === "CANCELADO" ? "selected" : "" %>>CANCELADO</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-success w-100">Filtrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<% if (pedidos.length === 0) { %>
+  <div class="empty-state">No hay pedidos registrados todavía.</div>
+<% } else { %>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Folio</th>
+            <th>Artesano</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Saldo</th>
+            <th>Productos</th>
+            <th style="width: 260px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pedidos.forEach(pedido => { %>
+            <tr>
+              <td><%= pedido.id %></td>
+              <td class="fw-semibold"><%= pedido.folio %></td>
+              <td><%= pedido.artesano ? pedido.artesano.nombre : "-" %></td>
+              <td><%= new Date(pedido.fechaPedido).toLocaleDateString("es-MX") %></td>
+              <td><span class="badge bg-dark"><%= pedido.estado %></span></td>
+              <td>$ <%= pedido.totalPactadoPesos %></td>
+              <td>$ <%= pedido.saldoPendientePesos %></td>
+              <td><%= pedido.detalles.length %></td>
+              <td>
+                <div class="inline-actions">
+                  <a href="/pedidos/<%= pedido.id %>" class="btn btn-sm btn-outline-dark">Ver detalle</a>
+
+                  <form action="/pedidos/<%= pedido.id %>?_method=DELETE" method="POST" class="d-inline">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger"
+                      data-confirm-trigger
+                      data-confirm-title="Eliminar pedido"
+                      data-confirm-text="Se eliminará el pedido <%= pedido.folio %>. Esta acción no se puede deshacer."
+                      data-confirm-button="Eliminar"
+                      data-confirm-class="btn-danger"
+                    >
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%- include("../partials/pagination", { paginacion }) %>
+<% } %>
+
+<%- include("../partials/end") %>

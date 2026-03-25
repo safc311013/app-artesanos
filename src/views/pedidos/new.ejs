@@ -1,0 +1,238 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Nuevo pedido</h1>
+    <p class="page-subtitle">Crea un pedido con varios productos</p>
+  </div>
+</div>
+
+<% const productosOld = (old && old.productos && old.productos.length > 0)
+  ? old.productos
+  : [{ productoId: "", cantidad: 1, precioUnitario: "0.00" }]; %>
+
+<% if (errores && errores.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errores.forEach(function(error) { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form action="/pedidos" method="POST">
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Artesano *</label>
+          <select name="artesanoId" id="artesanoId" class="form-select" required>
+            <option value="">Selecciona un artesano</option>
+            <% artesanos.forEach(function(artesano) { %>
+              <option value="<%= artesano.id %>" <%= String(old.artesanoId || "") === String(artesano.id) ? "selected" : "" %>>
+                <%= artesano.nombre %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Fecha estimada de entrega</label>
+          <input
+            type="date"
+            name="fechaEntregaEstimada"
+            class="form-control"
+            value="<%= old.fechaEntregaEstimada || '' %>"
+          >
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Observaciones</label>
+          <textarea name="observaciones" class="form-control" rows="3"><%= old.observaciones || '' %></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong>Productos del pedido</strong>
+      <button type="button" class="btn btn-sm btn-success" id="btnAgregarFila">
+        Agregar producto
+      </button>
+    </div>
+
+    <div class="card-body">
+      <div id="lineasPedido">
+        <% productosOld.forEach(function(item) { %>
+          <div class="row g-3 mb-3 linea-producto">
+            <div class="col-md-5">
+              <label class="form-label">Producto *</label>
+              <select name="productoId" class="form-select producto-select" required>
+                <option value="">Selecciona un producto</option>
+                <% productos.forEach(function(producto) { %>
+                  <option
+                    value="<%= producto.id %>"
+                    data-artesano-id="<%= producto.artesanoId %>"
+                    data-precio="<%= producto.precioBasePesos %>"
+                    <%= String(item.productoId || "") === String(producto.id) ? "selected" : "" %>
+                  >
+                    <%= producto.nombre %> - <%= producto.artesano.nombre %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Cantidad *</label>
+              <input
+                type="number"
+                name="cantidad"
+                class="form-control cantidad-input"
+                min="1"
+                value="<%= item.cantidad || 1 %>"
+                required
+              >
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Precio unitario *</label>
+              <input
+                type="number"
+                name="precioUnitario"
+                class="form-control precio-input"
+                step="0.01"
+                min="0"
+                value="<%= item.precioUnitario || '0.00' %>"
+                required
+              >
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="button" class="btn btn-outline-danger btnEliminarFila w-100">
+                Quitar
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="alert alert-secondary mt-3 mb-0">
+        Selecciona primero el artesano y luego productos que pertenezcan a ese artesano.
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="/pedidos" class="btn btn-outline-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">Guardar pedido</button>
+  </div>
+</form>
+
+<script>
+  const productosData = <%- JSON.stringify(
+    (productos || []).map(function(p) {
+      return {
+        id: p.id,
+        nombre: p.nombre,
+        artesanoId: p.artesanoId,
+        artesanoNombre: p.artesano && p.artesano.nombre ? p.artesano.nombre : "",
+        precioBasePesos: p.precioBasePesos
+      };
+    })
+  ) %>;
+
+  const lineasPedido = document.getElementById("lineasPedido");
+  const btnAgregarFila = document.getElementById("btnAgregarFila");
+  const artesanoSelect = document.getElementById("artesanoId");
+
+  function crearOpcionesProductos(valorSeleccionado) {
+    const artesanoId = artesanoSelect.value;
+    let opciones = '<option value="">Selecciona un producto</option>';
+
+    productosData
+      .filter(function(p) {
+        return !artesanoId || String(p.artesanoId) === String(artesanoId);
+      })
+      .forEach(function(p) {
+        const selected = String(valorSeleccionado || "") === String(p.id) ? "selected" : "";
+        opciones +=
+          '<option value="' + p.id + '" data-artesano-id="' + p.artesanoId + '" data-precio="' + p.precioBasePesos + '" ' + selected + '>' +
+          p.nombre + ' - ' + p.artesanoNombre +
+          '</option>';
+      });
+
+    return opciones;
+  }
+
+  function crearFila() {
+    const div = document.createElement("div");
+    div.className = "row g-3 mb-3 linea-producto";
+    div.innerHTML =
+      '<div class="col-md-5">' +
+        '<label class="form-label">Producto *</label>' +
+        '<select name="productoId" class="form-select producto-select" required>' +
+          crearOpcionesProductos("") +
+        '</select>' +
+      '</div>' +
+      '<div class="col-md-2">' +
+        '<label class="form-label">Cantidad *</label>' +
+        '<input type="number" name="cantidad" class="form-control cantidad-input" min="1" value="1" required>' +
+      '</div>' +
+      '<div class="col-md-3">' +
+        '<label class="form-label">Precio unitario *</label>' +
+        '<input type="number" name="precioUnitario" class="form-control precio-input" step="0.01" min="0" value="0.00" required>' +
+      '</div>' +
+      '<div class="col-md-2 d-flex align-items-end">' +
+        '<button type="button" class="btn btn-outline-danger btnEliminarFila w-100">Quitar</button>' +
+      '</div>';
+
+    lineasPedido.appendChild(div);
+  }
+
+  btnAgregarFila.addEventListener("click", function() {
+    crearFila();
+  });
+
+  lineasPedido.addEventListener("click", function(e) {
+    if (e.target.classList.contains("btnEliminarFila")) {
+      const filas = document.querySelectorAll(".linea-producto");
+      if (filas.length > 1) {
+        e.target.closest(".linea-producto").remove();
+      }
+    }
+  });
+
+  lineasPedido.addEventListener("change", function(e) {
+    if (e.target.classList.contains("producto-select")) {
+      const option = e.target.selectedOptions[0];
+      const fila = e.target.closest(".linea-producto");
+      const precioInput = fila.querySelector(".precio-input");
+
+      if (option && option.dataset.precio) {
+        precioInput.value = option.dataset.precio;
+      }
+    }
+  });
+
+  artesanoSelect.addEventListener("change", function() {
+    document.querySelectorAll(".producto-select").forEach(function(select) {
+      const valorActual = select.value;
+      select.innerHTML = crearOpcionesProductos(valorActual);
+
+      const sigueExistiendo = Array.from(select.options).some(function(opt) {
+        return opt.value === valorActual;
+      });
+
+      if (!sigueExistiendo) {
+        select.value = "";
+        const fila = select.closest(".linea-producto");
+        const precioInput = fila.querySelector(".precio-input");
+        precioInput.value = "0.00";
+      }
+    });
+  });
+</script>
+
+<%- include("../partials/end") %>

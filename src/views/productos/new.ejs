@@ -1,0 +1,85 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Nuevo producto</h1>
+    <p class="page-subtitle">Registra un producto para un artesano</p>
+  </div>
+</div>
+
+<% if (errores.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errores.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="card">
+  <div class="card-body">
+    <form action="/productos" method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Artesano *</label>
+          <select name="artesanoId" class="form-select" required>
+            <option value="">Selecciona un artesano</option>
+            <% artesanos.forEach(artesano => { %>
+              <option value="<%= artesano.id %>" <%= String(old.artesanoId) === String(artesano.id) ? "selected" : "" %>>
+                <%= artesano.nombre %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Nombre del producto *</label>
+          <input type="text" name="nombre" class="form-control" value="<%= old.nombre %>" required>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Precio base *</label>
+          <input type="number" name="precioBase" class="form-control" step="0.01" min="0" value="<%= old.precioBase %>" required>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Existencia *</label>
+          <input type="number" name="existencia" class="form-control" min="0" value="<%= old.existencia %>" required>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Unidad</label>
+          <input type="text" name="unidad" class="form-control" value="<%= old.unidad %>" placeholder="pieza, docena, caja, etc.">
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Descripción</label>
+          <textarea name="descripcion" class="form-control" rows="4"><%= old.descripcion %></textarea>
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="activo"
+              id="activo"
+              <%= old.activo ? "checked" : "" %>
+            >
+            <label class="form-check-label" for="activo">
+              Producto activo
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <a href="/productos" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Guardar producto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include("../partials/end") %>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= titulo %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-shell">
+      <div class="auth-theme-toggle-wrap">
+        <button type="button" id="themeToggleBtn" class="btn btn-sm theme-toggle-btn">
+          <span id="themeToggleIcon" class="theme-toggle-icon">☾</span>
+          <span id="themeToggleLabel">Oscuro</span>
+        </button>
+      </div>
+
+      <div class="auth-card auth-card-split">
+        <div class="auth-side">
+          <div class="auth-logo-wrap">
+            <img src="/img/logo.png" alt="Hilos en Nogada" class="auth-logo">
+          </div>
+
+          <div class="auth-side-copy">
+            <div class="auth-kicker">Panel interno</div>
+            <h1 class="auth-side-title">Controla artesanos, pedidos y saldos en un solo lugar.</h1>
+            <p class="auth-side-text">
+              Entra a tu panel para dar seguimiento a productos, movimientos y reportes de forma rápida.
+            </p>
+
+            <div class="auth-points">
+              <div class="auth-point">
+                <span class="auth-point-dot"></span>
+                <span>Pedidos y movimientos</span>
+              </div>
+              <div class="auth-point">
+                <span class="auth-point-dot"></span>
+                <span>Saldos pendientes por artesano</span>
+              </div>
+              <div class="auth-point">
+                <span class="auth-point-dot"></span>
+                <span>Reportes y exportaciones</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-form-panel">
+          <div class="auth-form-header">
+            <h2 class="auth-title">Iniciar sesión</h2>
+            <p class="auth-subtitle">Accede a tu panel de trabajo</p>
+          </div>
+
+          <% if (error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+          <% } %>
+
+          <form action="/login" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                placeholder="Usuario"
+                required
+              >
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Contraseña</label>
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                placeholder="Contraseña"
+                required
+              >
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

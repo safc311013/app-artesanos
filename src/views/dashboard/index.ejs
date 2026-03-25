@@ -1,0 +1,133 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Resumen general del sistema</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-label">Artesanos</div>
+      <div class="stat-value"><%= resumen.totalArtesanos %></div>
+      <div class="stat-note">Activos: <%= resumen.artesanosActivos %></div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-label">Productos</div>
+      <div class="stat-value"><%= resumen.totalProductos %></div>
+      <div class="stat-note">Activos: <%= resumen.productosActivos %></div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-label">Pedidos</div>
+      <div class="stat-value"><%= resumen.totalPedidos %></div>
+      <div class="stat-note">Abiertos: <%= resumen.pedidosAbiertos %></div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-label">Saldo total pendiente</div>
+      <div class="stat-value">$ <%= resumen.saldoTotalArtesanosPesos %></div>
+      <div class="stat-note">Por pagar a artesanos</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">Pedidos por estado</div>
+      <div class="card-body">
+        <div class="row g-3 text-center">
+          <div class="col-6 col-md-4">
+            <a href="/pedidos?estado=PENDIENTE" class="soft-badge soft-badge-link w-100 justify-content-center">
+              Pendiente: <%= pedidosPorEstado.PENDIENTE %>
+            </a>
+          </div>
+
+          <div class="col-6 col-md-4">
+            <a href="/pedidos?estado=EN_PROCESO" class="soft-badge soft-badge-link w-100 justify-content-center">
+              En proceso: <%= pedidosPorEstado.EN_PROCESO %>
+            </a>
+          </div>
+
+          <div class="col-6 col-md-4">
+            <a href="/pedidos?estado=TERMINADO" class="soft-badge soft-badge-link w-100 justify-content-center">
+              Terminado: <%= pedidosPorEstado.TERMINADO %>
+            </a>
+          </div>
+
+          <div class="col-6 col-md-6">
+            <a href="/pedidos?estado=ENTREGADO" class="soft-badge soft-badge-link w-100 justify-content-center">
+              Entregado: <%= pedidosPorEstado.ENTREGADO %>
+            </a>
+          </div>
+
+          <div class="col-6 col-md-6">
+            <a href="/pedidos?estado=CANCELADO" class="soft-badge soft-badge-link w-100 justify-content-center">
+              Cancelado: <%= pedidosPorEstado.CANCELADO %>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Artesanos con saldo</span>
+        <a href="/reportes" class="btn btn-sm btn-outline-dark">Ver reportes</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Artesano</th>
+              <th>Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (artesanosConSaldo.length === 0) { %>
+              <tr>
+                <td colspan="2" class="text-center text-muted">Sin saldos pendientes</td>
+              </tr>
+            <% } else { %>
+              <% artesanosConSaldo.forEach(artesano => { %>
+                <tr>
+                  <td>
+                    <a
+                      href="/artesanos?q=<%= encodeURIComponent(artesano.nombre) %>"
+                      class="table-link"
+                    >
+                      <%= artesano.nombre %>
+                    </a>
+                  </td>
+                  <td>
+                    <a
+                      href="/reportes"
+                      class="table-link"
+                    >
+                      $ <%= artesano.saldoPendientePesos %>
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/end") %>

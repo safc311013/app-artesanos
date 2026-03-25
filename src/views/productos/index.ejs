@@ -1,0 +1,217 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Productos</h1>
+    <p class="page-subtitle">Productos registrados por artesano</p>
+  </div>
+
+  <div class="page-actions">
+    <a href="/productos/nuevo" class="btn btn-primary">Nuevo producto</a>
+  </div>
+</div>
+
+<div class="card filter-card">
+  <div class="card-body">
+    <form method="GET" action="/productos" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Buscar</label>
+        <input
+          type="text"
+          name="q"
+          class="form-control"
+          placeholder="Nombre o descripción"
+          value="<%= filtros?.q || '' %>"
+        >
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Artesano</label>
+        <select name="artesanoId" class="form-select">
+          <option value="">Todos</option>
+          <% artesanos.forEach(artesano => { %>
+            <option value="<%= artesano.id %>" <%= String(filtroArtesanoId) === String(artesano.id) ? "selected" : "" %>>
+              <%= artesano.nombre %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <select name="estado" class="form-select">
+          <option value="">Todos</option>
+          <option value="activos" <%= filtros?.estado === "activos" ? "selected" : "" %>>Activos</option>
+          <option value="inactivos" <%= filtros?.estado === "inactivos" ? "selected" : "" %>>Inactivos</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-success w-100">Filtrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<% if (productos.length === 0) { %>
+  <div class="empty-state">No hay productos registrados con ese filtro.</div>
+<% } else { %>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Producto</th>
+            <th>Artesano</th>
+            <th>Precio base</th>
+            <th>Existencia</th>
+            <th>Unidad</th>
+            <th>Estado</th>
+            <th style="width: 380px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% productos.forEach(producto => { %>
+            <tr>
+              <td><%= producto.id %></td>
+              <td>
+                <div class="fw-semibold"><%= producto.nombre %></div>
+                <div class="text-muted small"><%= producto.descripcion || "Sin descripción" %></div>
+              </td>
+              <td><%= producto.artesano ? producto.artesano.nombre : "-" %></td>
+              <td>$ <%= producto.precioBasePesos %></td>
+              <td><%= producto.existencia %></td>
+              <td><%= producto.unidad %></td>
+              <td>
+                <% if (producto.activo) { %>
+                  <span class="badge bg-success">Activo</span>
+                <% } else { %>
+                  <span class="badge bg-secondary">Inactivo</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="inline-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditarProducto-<%= producto.id %>"
+                  >
+                    Editar
+                  </button>
+
+                  <form action="/productos/<%= producto.id %>/estado?_method=PUT" method="POST" class="d-inline">
+                    <input type="hidden" name="activo" value="<%= producto.activo ? 'false' : 'true' %>">
+                    <button
+                      type="button"
+                      class="btn btn-sm <%= producto.activo ? 'btn-outline-danger' : 'btn-outline-success' %>"
+                      data-confirm-trigger
+                      data-confirm-title="<%= producto.activo ? 'Desactivar producto' : 'Activar producto' %>"
+                      data-confirm-text="Se actualizará el estado de <%= producto.nombre %>."
+                      data-confirm-button="<%= producto.activo ? 'Desactivar' : 'Activar' %>"
+                      data-confirm-class="<%= producto.activo ? 'btn-danger' : 'btn-success' %>"
+                    >
+                      <%= producto.activo ? 'Desactivar' : 'Activar' %>
+                    </button>
+                  </form>
+
+                  <form action="/productos/<%= producto.id %>?_method=DELETE" method="POST" class="d-inline">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger"
+                      data-confirm-trigger
+                      data-confirm-title="Eliminar producto"
+                      data-confirm-text="Se eliminará <%= producto.nombre %>. Esta acción no se puede deshacer."
+                      data-confirm-button="Eliminar"
+                      data-confirm-class="btn-danger"
+                    >
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+
+            <div class="modal fade" id="modalEditarProducto-<%= producto.id %>" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content app-modal">
+                  <form action="/productos/<%= producto.id %>?_method=PUT" method="POST">
+                    <div class="modal-header border-0 pb-0">
+                      <h5 class="modal-title">Editar producto</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label">Artesano</label>
+                          <select name="artesanoId" class="form-select" required>
+                            <% artesanos.forEach(artesano => { %>
+                              <option value="<%= artesano.id %>" <%= String(producto.artesanoId) === String(artesano.id) ? "selected" : "" %>>
+                                <%= artesano.nombre %>
+                              </option>
+                            <% }) %>
+                          </select>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Nombre</label>
+                          <input type="text" name="nombre" class="form-control" value="<%= producto.nombre %>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Precio base</label>
+                          <input type="number" name="precioBase" class="form-control" step="0.01" min="0" value="<%= producto.precioBasePesos %>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Existencia</label>
+                          <input type="number" name="existencia" class="form-control" min="0" value="<%= producto.existencia %>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Unidad</label>
+                          <input type="text" name="unidad" class="form-control" value="<%= producto.unidad || '' %>">
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Descripción</label>
+                          <textarea name="descripcion" class="form-control" rows="4"><%= producto.descripcion || '' %></textarea>
+                        </div>
+
+                        <div class="col-12">
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="activo"
+                              id="activoProducto-<%= producto.id %>"
+                              <%= producto.activo ? "checked" : "" %>
+                            >
+                            <label class="form-check-label" for="activoProducto-<%= producto.id %>">
+                              Producto activo
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="modal-footer border-0">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%- include("../partials/pagination", { paginacion }) %>
+<% } %>
+
+<%- include("../partials/end") %>

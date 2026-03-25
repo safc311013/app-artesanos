@@ -1,0 +1,44 @@
+  </main>
+
+  <% if (typeof mensajeOk !== "undefined" && mensajeOk) { %>
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div class="toast app-toast app-toast-success" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+          <strong>Correcto:</strong> <%= mensajeOk %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (typeof mensajeError !== "undefined" && mensajeError) { %>
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div class="toast app-toast app-toast-error" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+          <strong>Error:</strong> <%= mensajeError %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="modal fade" id="confirmActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content app-modal">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title" id="confirmActionTitle">Confirmar acción</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <p class="text-muted mb-0" id="confirmActionText">¿Deseas continuar?</p>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmActionBtn">Continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

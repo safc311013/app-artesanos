@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= titulo || "App Artesanos" %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <% const pathActual = currentPath || ""; %>
+
+  <nav class="app-navbar">
+    <div class="container app-navbar-inner">
+      <a href="/" class="app-brand" aria-label="Inicio">
+        <img src="/img/logo.png" alt="Hilos en Nogada" class="app-logo">
+      </a>
+
+      <div class="app-nav-links">
+        <a href="/" class="<%= pathActual === '/' ? 'active' : '' %>">Dashboard</a>
+        <a href="/artesanos" class="<%= pathActual.startsWith('/artesanos') ? 'active' : '' %>">Artesanos</a>
+        <a href="/productos" class="<%= pathActual.startsWith('/productos') ? 'active' : '' %>">Productos</a>
+        <a href="/pedidos" class="<%= pathActual.startsWith('/pedidos') ? 'active' : '' %>">Pedidos</a>
+        <a href="/reportes" class="<%= pathActual.startsWith('/reportes') ? 'active' : '' %>">Reportes</a>
+        <a href="/exportaciones" class="<%= pathActual.startsWith('/exportaciones') ? 'active' : '' %>">Exportaciones</a>
+      </div>
+
+      <% if (currentUser) { %>
+        <div class="app-user-box">
+          <button type="button" id="themeToggleBtn" class="btn btn-sm theme-toggle-btn">
+            <span id="themeToggleIcon" class="theme-toggle-icon">☾</span>
+            <span id="themeToggleLabel">Oscuro</span>
+          </button>
+
+          <div class="app-user-meta">
+            <div class="app-user-name"><%= currentUser.nombre %></div>
+            <div class="app-user-email"><%= currentUser.email %></div>
+          </div>
+
+          <form action="/logout" method="POST">
+            <button type="submit" class="btn btn-sm btn-logout">Salir</button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+  </nav>
+
+  <main class="container py-4">

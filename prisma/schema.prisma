@@ -1,0 +1,109 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  EN_PROCESO
+  TERMINADO
+  ENTREGADO
+  CANCELADO
+}
+
+enum TipoMovimiento {
+  ALTA_PEDIDO
+  CAMBIO_ESTADO
+  ABONO
+  CARGO
+  NOTA
+}
+
+model Artesano {
+  id             Int        @id @default(autoincrement())
+  nombre         String
+  telefono       String?
+  email          String?
+  direccion      String?
+  notas          String?
+  saldoPendiente Int        @default(0)
+  activo         Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  productos      Producto[]
+  pedidos        Pedido[]
+}
+
+model Producto {
+  id          Int            @id @default(autoincrement())
+  artesanoId  Int
+  nombre      String
+  descripcion String?
+  precioBase  Int            @default(0)
+  existencia  Int            @default(0)
+  unidad      String         @default("pieza")
+  activo      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  artesano    Artesano       @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
+  detalles    PedidoDetalle[]
+}
+
+model Pedido {
+  id                   Int           @id @default(autoincrement())
+  folio                String        @unique
+  artesanoId           Int
+  fechaPedido          DateTime      @default(now())
+  fechaEntregaEstimada DateTime?
+  estado               EstadoPedido  @default(PENDIENTE)
+  observaciones        String?
+  totalPactado         Int           @default(0)
+  totalAbonado         Int           @default(0)
+  saldoPendiente       Int           @default(0)
+  updatedAt            DateTime      @updatedAt
+
+  artesano             Artesano      @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
+  detalles             PedidoDetalle[]
+  movimientos          Movimiento[]
+}
+
+model PedidoDetalle {
+  id             Int      @id @default(autoincrement())
+  pedidoId       Int
+  productoId     Int
+  cantidad       Int
+  precioUnitario Int
+  subtotal       Int
+  createdAt      DateTime @default(now())
+
+  pedido         Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  producto       Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+}
+
+model Movimiento {
+  id             Int            @id @default(autoincrement())
+  pedidoId       Int
+  tipo           TipoMovimiento
+  descripcion    String?
+  monto          Int            @default(0)
+  fechaMovimiento DateTime      @default(now())
+
+  pedido         Pedido         @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

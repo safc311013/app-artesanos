@@ -1,0 +1,25 @@
+<% if (paginacion && paginacion.totalPages > 1) { %>
+  <nav class="app-pagination" aria-label="Paginación">
+    <ul class="pagination">
+      <li class="page-item <%= paginacion.hasPrev ? '' : 'disabled' %>">
+        <a class="page-link" href="<%= paginacion.hasPrev ? `${paginacion.baseUrl}?page=${paginacion.currentPage - 1}${paginacion.queryString}` : '#' %>">
+          Anterior
+        </a>
+      </li>
+
+      <% for (let i = 1; i <= paginacion.totalPages; i++) { %>
+        <li class="page-item <%= i === paginacion.currentPage ? 'active' : '' %>">
+          <a class="page-link" href="<%= `${paginacion.baseUrl}?page=${i}${paginacion.queryString}` %>">
+            <%= i %>
+          </a>
+        </li>
+      <% } %>
+
+      <li class="page-item <%= paginacion.hasNext ? '' : 'disabled' %>">
+        <a class="page-link" href="<%= paginacion.hasNext ? `${paginacion.baseUrl}?page=${paginacion.currentPage + 1}${paginacion.queryString}` : '#' %>">
+          Siguiente
+        </a>
+      </li>
+    </ul>
+  </nav>
+<% } %>

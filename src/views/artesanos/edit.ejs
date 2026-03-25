@@ -1,0 +1,78 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Editar artesano</h1>
+    <p class="page-subtitle">Actualiza la información del artesano</p>
+  </div>
+</div>
+
+<% if (errores.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errores.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="card">
+  <div class="card-body">
+    <form action="/artesanos/<%= artesano.id %>?_method=PUT" method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nombre *</label>
+          <input type="text" name="nombre" class="form-control" value="<%= artesano.nombre %>" required>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Teléfono</label>
+          <input type="text" name="telefono" class="form-control" value="<%= artesano.telefono || '' %>">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" value="<%= artesano.email || '' %>">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Saldo pendiente</label>
+          <input type="number" name="saldoPendiente" class="form-control" step="0.01" min="0" value="<%= artesano.saldoPendiente %>">
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Dirección</label>
+          <input type="text" name="direccion" class="form-control" value="<%= artesano.direccion || '' %>">
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Notas</label>
+          <textarea name="notas" class="form-control" rows="4"><%= artesano.notas || '' %></textarea>
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="activo"
+              id="activo"
+              <%= artesano.activo ? "checked" : "" %>
+            >
+            <label class="form-check-label" for="activo">
+              Artesano activo
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <a href="/artesanos" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Actualizar artesano</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include("../partials/end") %>

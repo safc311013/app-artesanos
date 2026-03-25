@@ -1,0 +1,196 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Artesanos</h1>
+    <p class="page-subtitle">Lista de artesanos registrados</p>
+  </div>
+
+  <div class="page-actions">
+    <a href="/artesanos/nuevo" class="btn btn-primary">Nuevo artesano</a>
+  </div>
+</div>
+
+<div class="card filter-card">
+  <div class="card-body">
+    <form method="GET" action="/artesanos" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Buscar</label>
+        <input
+          type="text"
+          name="q"
+          class="form-control"
+          placeholder="Nombre, teléfono o email"
+          value="<%= filtros?.q || '' %>"
+        >
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Estado</label>
+        <select name="estado" class="form-select">
+          <option value="">Todos</option>
+          <option value="activos" <%= filtros?.estado === "activos" ? "selected" : "" %>>Activos</option>
+          <option value="inactivos" <%= filtros?.estado === "inactivos" ? "selected" : "" %>>Inactivos</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-success w-100">Filtrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<% if (artesanos.length === 0) { %>
+  <div class="empty-state">No hay artesanos registrados todavía.</div>
+<% } else { %>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Saldo pendiente</th>
+            <th>Estado</th>
+            <th style="width: 420px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% artesanos.forEach(artesano => { %>
+            <tr>
+              <td><%= artesano.id %></td>
+              <td><div class="fw-semibold"><%= artesano.nombre %></div></td>
+              <td><%= artesano.telefono || "-" %></td>
+              <td><%= artesano.email || "-" %></td>
+              <td>$ <%= artesano.saldoPendientePesos %></td>
+              <td>
+                <% if (artesano.activo) { %>
+                  <span class="badge bg-success">Activo</span>
+                <% } else { %>
+                  <span class="badge bg-secondary">Inactivo</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="inline-actions">
+                  <a href="/productos?artesanoId=<%= artesano.id %>" class="btn btn-sm btn-outline-dark">Productos</a>
+
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditarArtesano-<%= artesano.id %>"
+                  >
+                    Editar
+                  </button>
+
+                  <form action="/artesanos/<%= artesano.id %>/estado?_method=PUT" method="POST" class="d-inline">
+                    <input type="hidden" name="activo" value="<%= artesano.activo ? 'false' : 'true' %>">
+                    <button
+                      type="button"
+                      class="btn btn-sm <%= artesano.activo ? 'btn-outline-danger' : 'btn-outline-success' %>"
+                      data-confirm-trigger
+                      data-confirm-title="<%= artesano.activo ? 'Desactivar artesano' : 'Activar artesano' %>"
+                      data-confirm-text="Se actualizará el estado de <%= artesano.nombre %>."
+                      data-confirm-button="<%= artesano.activo ? 'Desactivar' : 'Activar' %>"
+                      data-confirm-class="<%= artesano.activo ? 'btn-danger' : 'btn-success' %>"
+                    >
+                      <%= artesano.activo ? 'Desactivar' : 'Activar' %>
+                    </button>
+                  </form>
+
+                  <form action="/artesanos/<%= artesano.id %>?_method=DELETE" method="POST" class="d-inline">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger"
+                      data-confirm-trigger
+                      data-confirm-title="Eliminar artesano"
+                      data-confirm-text="Se eliminará <%= artesano.nombre %> y sus registros relacionados. Esta acción no se puede deshacer."
+                      data-confirm-button="Eliminar"
+                      data-confirm-class="btn-danger"
+                    >
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+
+            <div class="modal fade" id="modalEditarArtesano-<%= artesano.id %>" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content app-modal">
+                  <form action="/artesanos/<%= artesano.id %>?_method=PUT" method="POST">
+                    <div class="modal-header border-0 pb-0">
+                      <h5 class="modal-title">Editar artesano</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label">Nombre</label>
+                          <input type="text" name="nombre" class="form-control" value="<%= artesano.nombre %>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Teléfono</label>
+                          <input type="text" name="telefono" class="form-control" value="<%= artesano.telefono || '' %>">
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Email</label>
+                          <input type="email" name="email" class="form-control" value="<%= artesano.email || '' %>">
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label">Saldo pendiente</label>
+                          <input type="number" name="saldoPendiente" class="form-control" step="0.01" min="0" value="<%= artesano.saldoPendientePesos %>">
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Dirección</label>
+                          <input type="text" name="direccion" class="form-control" value="<%= artesano.direccion || '' %>">
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Notas</label>
+                          <textarea name="notas" class="form-control" rows="4"><%= artesano.notas || '' %></textarea>
+                        </div>
+
+                        <div class="col-12">
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="activo"
+                              id="activo-<%= artesano.id %>"
+                              <%= artesano.activo ? "checked" : "" %>
+                            >
+                            <label class="form-check-label" for="activo-<%= artesano.id %>">
+                              Artesano activo
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="modal-footer border-0">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%- include("../partials/pagination", { paginacion }) %>
+<% } %>
+
+<%- include("../partials/end") %>

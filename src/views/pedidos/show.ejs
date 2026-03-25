@@ -1,0 +1,187 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Pedido <%= pedido.folio %></h1>
+    <p class="page-subtitle">Detalle completo del pedido</p>
+  </div>
+
+  <div class="page-actions">
+    <a href="/pedidos" class="btn btn-outline-secondary">Volver</a>
+
+    <form action="/pedidos/<%= pedido.id %>?_method=DELETE" method="POST" class="d-inline">
+      <button
+        type="button"
+        class="btn btn-danger"
+        data-confirm-trigger
+        data-confirm-title="Eliminar pedido"
+        data-confirm-text="Se eliminará el pedido <%= pedido.folio %>. Esta acción no se puede deshacer."
+        data-confirm-button="Eliminar"
+        data-confirm-class="btn-danger"
+      >
+        Eliminar pedido
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="section-stack">
+      <div class="card">
+        <div class="card-header">Información general</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6"><strong>Folio:</strong><br><%= pedido.folio %></div>
+            <div class="col-md-6"><strong>Artesano:</strong><br><%= pedido.artesano ? pedido.artesano.nombre : "-" %></div>
+            <div class="col-md-6"><strong>Fecha de pedido:</strong><br><%= new Date(pedido.fechaPedido).toLocaleDateString("es-MX") %></div>
+            <div class="col-md-6"><strong>Entrega estimada:</strong><br><%= pedido.fechaEntregaEstimada ? new Date(pedido.fechaEntregaEstimada).toLocaleDateString("es-MX") : "-" %></div>
+            <div class="col-md-6"><strong>Estado:</strong><br><span class="badge bg-dark"><%= pedido.estado %></span></div>
+            <div class="col-12"><strong>Observaciones:</strong><br><%= pedido.observaciones || "Sin observaciones" %></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Productos del pedido</div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% pedido.detalles.forEach(detalle => { %>
+                <tr>
+                  <td><%= detalle.producto ? detalle.producto.nombre : "-" %></td>
+                  <td><%= detalle.cantidad %></td>
+                  <td>$ <%= detalle.precioUnitarioPesos %></td>
+                  <td>$ <%= detalle.subtotalPesos %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Historial de movimientos</div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (pedido.movimientos.length === 0) { %>
+                <tr><td colspan="4" class="text-center text-muted">Sin movimientos registrados</td></tr>
+              <% } else { %>
+                <% pedido.movimientos.forEach(movimiento => { %>
+                  <tr>
+                    <td><%= new Date(movimiento.fechaMovimiento).toLocaleString("es-MX") %></td>
+                    <td><span class="soft-badge"><%= movimiento.tipo %></span></td>
+                    <td><%= movimiento.descripcion %></td>
+                    <td>$ <%= movimiento.montoPesos %></td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="section-stack">
+      <div class="card">
+        <div class="card-header">Resumen económico</div>
+        <div class="card-body">
+          <p><strong>Total pactado:</strong> $ <%= pedido.totalPactadoPesos %></p>
+          <p><strong>Total abonado:</strong> $ <%= pedido.totalAbonadoPesos %></p>
+          <p class="mb-0"><strong>Saldo pendiente:</strong> $ <%= pedido.saldoPendientePesos %></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Cambiar estado</div>
+        <div class="card-body">
+          <form action="/pedidos/<%= pedido.id %>/estado?_method=PUT" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Nuevo estado</label>
+              <select name="estado" class="form-select">
+                <option value="PENDIENTE" <%= pedido.estado === "PENDIENTE" ? "selected" : "" %>>PENDIENTE</option>
+                <option value="EN_PROCESO" <%= pedido.estado === "EN_PROCESO" ? "selected" : "" %>>EN_PROCESO</option>
+                <option value="TERMINADO" <%= pedido.estado === "TERMINADO" ? "selected" : "" %>>TERMINADO</option>
+                <option value="ENTREGADO" <%= pedido.estado === "ENTREGADO" ? "selected" : "" %>>ENTREGADO</option>
+                <option value="CANCELADO" <%= pedido.estado === "CANCELADO" ? "selected" : "" %>>CANCELADO</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Actualizar estado</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Registrar movimiento</div>
+        <div class="card-body">
+          <form action="/pedidos/<%= pedido.id %>/movimientos" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Tipo de movimiento</label>
+              <select name="tipo" class="form-select" id="tipoMovimiento" required>
+                <option value="ABONO">ABONO</option>
+                <option value="CARGO">CARGO</option>
+                <option value="NOTA">NOTA</option>
+              </select>
+            </div>
+
+            <div class="mb-3" id="grupoMonto">
+              <label class="form-label">Monto</label>
+              <input type="number" name="monto" id="montoMovimiento" class="form-control" step="0.01" min="0">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <textarea name="descripcion" class="form-control" rows="3" placeholder="Ejemplo: Abono en efectivo, ajuste por material..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Guardar movimiento</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tipoMovimiento = document.getElementById("tipoMovimiento");
+    const grupoMonto = document.getElementById("grupoMonto");
+    const montoMovimiento = document.getElementById("montoMovimiento");
+
+    function actualizarFormularioMovimiento() {
+      if (tipoMovimiento.value === "NOTA") {
+        grupoMonto.style.display = "none";
+        montoMovimiento.value = "";
+        montoMovimiento.required = false;
+      } else {
+        grupoMonto.style.display = "block";
+        montoMovimiento.required = true;
+      }
+    }
+
+    tipoMovimiento.addEventListener("change", actualizarFormularioMovimiento);
+    actualizarFormularioMovimiento();
+  });
+</script>
+
+<%- include("../partials/end") %>

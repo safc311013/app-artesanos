@@ -1,0 +1,80 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Exportaciones</h1>
+    <p class="page-subtitle">Descarga reportes en Excel y crea respaldos de la base de datos</p>
+  </div>
+</div>
+
+<% if (mensajeOk) { %>
+  <div class="alert alert-success"><%= mensajeOk %></div>
+<% } %>
+
+<% if (mensajeError) { %>
+  <div class="alert alert-danger"><%= mensajeError %></div>
+<% } %>
+
+<div class="row g-4">
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Artesanos</h5>
+        <p class="text-muted">Exporta el catálogo completo de artesanos con saldo y estado.</p>
+        <a href="/exportaciones/artesanos" class="btn btn-primary">Descargar Excel</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Productos</h5>
+        <p class="text-muted">Exporta todos los productos con artesano, precio, existencia y estado.</p>
+        <a href="/exportaciones/productos" class="btn btn-primary">Descargar Excel</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Pedidos</h5>
+        <p class="text-muted">Exporta pedidos con folio, estado, artesano y montos.</p>
+        <a href="/exportaciones/pedidos" class="btn btn-primary">Descargar Excel</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Movimientos</h5>
+        <p class="text-muted">Exporta el historial de movimientos de pedidos y abonos.</p>
+        <a href="/exportaciones/movimientos" class="btn btn-primary">Descargar Excel</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Saldos</h5>
+        <p class="text-muted">Exporta artesanos con saldo pendiente y pedidos con saldo abierto.</p>
+        <a href="/exportaciones/saldos" class="btn btn-primary">Descargar Excel</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100 border-warning">
+      <div class="card-body">
+        <h5 class="mb-2">Respaldo</h5>
+        <p class="text-muted">Descarga un ZIP con tu base de datos SQLite y metadatos del respaldo.</p>
+        <a href="/exportaciones/respaldo" class="btn btn-outline-dark">Descargar respaldo ZIP</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/end") %>

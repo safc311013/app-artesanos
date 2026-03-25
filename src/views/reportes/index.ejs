@@ -1,0 +1,148 @@
+<%- include("../partials/head", { titulo }) %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reportes</h1>
+    <p class="page-subtitle">Consulta saldos y movimientos del sistema</p>
+  </div>
+</div>
+
+<div class="card filter-card">
+  <div class="card-body">
+    <form method="GET" action="/reportes" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Tipo de movimiento</label>
+        <select name="tipo" class="form-select">
+          <option value="">Todos</option>
+          <option value="ALTA_PEDIDO" <%= filtros?.tipo === "ALTA_PEDIDO" ? "selected" : "" %>>ALTA_PEDIDO</option>
+          <option value="CAMBIO_ESTADO" <%= filtros?.tipo === "CAMBIO_ESTADO" ? "selected" : "" %>>CAMBIO_ESTADO</option>
+          <option value="ABONO" <%= filtros?.tipo === "ABONO" ? "selected" : "" %>>ABONO</option>
+          <option value="CARGO" <%= filtros?.tipo === "CARGO" ? "selected" : "" %>>CARGO</option>
+          <option value="NOTA" <%= filtros?.tipo === "NOTA" ? "selected" : "" %>>NOTA</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Fecha inicio</label>
+        <input type="date" name="fechaInicio" class="form-control" value="<%= filtros?.fechaInicio || '' %>">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" name="fechaFin" class="form-control" value="<%= filtros?.fechaFin || '' %>">
+      </div>
+
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-success w-100">Filtrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="section-stack">
+  <div class="card">
+    <div class="card-header">Artesanos con saldo pendiente</div>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Saldo pendiente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (artesanosConSaldo.length === 0) { %>
+            <tr><td colspan="4" class="text-center text-muted">No hay saldos pendientes</td></tr>
+          <% } else { %>
+            <% artesanosConSaldo.forEach(artesano => { %>
+              <tr>
+                <td><%= artesano.id %></td>
+                <td><%= artesano.nombre %></td>
+                <td><%= artesano.telefono || "-" %></td>
+                <td>$ <%= artesano.saldoPendientePesos %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Pedidos con saldo pendiente</div>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Artesano</th>
+            <th>Estado</th>
+            <th>Total pactado</th>
+            <th>Total abonado</th>
+            <th>Saldo pendiente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (pedidosConSaldo.length === 0) { %>
+            <tr><td colspan="6" class="text-center text-muted">No hay pedidos con saldo pendiente</td></tr>
+          <% } else { %>
+            <% pedidosConSaldo.forEach(pedido => { %>
+              <tr>
+                <td><a href="/pedidos/<%= pedido.id %>"><%= pedido.folio %></a></td>
+                <td><%= pedido.artesano ? pedido.artesano.nombre : "-" %></td>
+                <td><%= pedido.estado %></td>
+                <td>$ <%= pedido.totalPactadoPesos %></td>
+                <td>$ <%= pedido.totalAbonadoPesos %></td>
+                <td>$ <%= pedido.saldoPendientePesos %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Movimientos recientes</div>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Pedido</th>
+            <th>Artesano</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (movimientos.length === 0) { %>
+            <tr><td colspan="6" class="text-center text-muted">No hay movimientos registrados</td></tr>
+          <% } else { %>
+            <% movimientos.forEach(movimiento => { %>
+              <tr>
+                <td><%= new Date(movimiento.fechaMovimiento).toLocaleString("es-MX") %></td>
+                <td>
+                  <% if (movimiento.pedido) { %>
+                    <a href="/pedidos/<%= movimiento.pedido.id %>"><%= movimiento.pedido.folio %></a>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+                <td><%= movimiento.pedido && movimiento.pedido.artesano ? movimiento.pedido.artesano.nombre : "-" %></td>
+                <td><%= movimiento.tipo %></td>
+                <td><%= movimiento.descripcion %></td>
+                <td>$ <%= movimiento.montoPesos %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/end") %>
