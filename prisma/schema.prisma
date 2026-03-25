@@ -1,7 +1,5 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -88,14 +86,14 @@ model PedidoDetalle {
 }
 
 model Movimiento {
-  id             Int            @id @default(autoincrement())
-  pedidoId       Int
-  tipo           TipoMovimiento
-  descripcion    String?
-  monto          Int            @default(0)
-  fechaMovimiento DateTime      @default(now())
+  id              Int            @id @default(autoincrement())
+  pedidoId        Int
+  tipo            TipoMovimiento
+  descripcion     String?
+  monto           Int            @default(0)
+  fechaMovimiento DateTime       @default(now())
 
-  pedido         Pedido         @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  pedido          Pedido         @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
 }
 
 model Usuario {
