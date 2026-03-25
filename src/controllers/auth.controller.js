@@ -17,15 +17,21 @@ exports.login = async (req, res) => {
       return res.redirect("/login?error=Debes escribir email y contraseña");
     }
 
+    console.log("Intentando login con:", email);
+
     const usuario = await prisma.usuario.findUnique({
       where: { email },
     });
+
+    console.log("Usuario encontrado:", usuario ? usuario.email : "NO");
 
     if (!usuario || !usuario.activo) {
       return res.redirect("/login?error=Usuario o contraseña incorrectos");
     }
 
     const passwordCorrecto = await bcrypt.compare(password, usuario.passwordHash);
+
+    console.log("Password correcta:", passwordCorrecto);
 
     if (!passwordCorrecto) {
       return res.redirect("/login?error=Usuario o contraseña incorrectos");
@@ -39,14 +45,16 @@ exports.login = async (req, res) => {
 
     return res.redirect("/");
   } catch (error) {
-    console.error("Error al iniciar sesión:", error);
+    console.error("Error real al iniciar sesión:");
+    console.error(error);
+
     return res.redirect("/login?error=No se pudo iniciar sesión");
   }
 };
 
 exports.logout = (req, res) => {
   req.session.destroy(() => {
-    res.clearCookie("sid");
+    res.clearCookie("artesanos.sid");
     res.redirect("/login");
   });
 };
