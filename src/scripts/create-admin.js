@@ -8,19 +8,16 @@ async function main() {
   const email = "admin@hilos.com";
   const password = "Admin12345";
 
-  const existing = await prisma.usuario.findUnique({
-    where: { email },
-  });
-
-  if (existing) {
-    console.log("El usuario admin ya existe.");
-    return;
-  }
-
   const passwordHash = await bcrypt.hash(password, 10);
 
-  await prisma.usuario.create({
-    data: {
+  await prisma.usuario.upsert({
+    where: { email },
+    update: {
+      nombre,
+      passwordHash,
+      activo: true,
+    },
+    create: {
       nombre,
       email,
       passwordHash,
@@ -28,7 +25,7 @@ async function main() {
     },
   });
 
-  console.log("Usuario admin creado correctamente.");
+  console.log("Usuario admin restablecido correctamente.");
   console.log("Email:", email);
   console.log("Password:", password);
 }
