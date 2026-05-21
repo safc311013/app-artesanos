@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const { Pool } = require("pg");
 const { PrismaPg } = require("@prisma/adapter-pg");
 const { PrismaClient } = require("@prisma/client");
 
@@ -9,9 +10,14 @@ if (!connectionString) {
   throw new Error("Falta la variable DATABASE_URL");
 }
 
-const adapter = new PrismaPg({
+const pool = new Pool({
   connectionString,
+  ssl: connectionString.includes("render.com")
+    ? { rejectUnauthorized: false }
+    : undefined,
 });
+
+const adapter = new PrismaPg(pool);
 
 const globalForPrisma = global;
 
