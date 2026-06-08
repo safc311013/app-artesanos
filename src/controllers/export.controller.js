@@ -191,7 +191,7 @@ exports.exportProductos = async (req, res) => {
       { header: "Artesano", key: "artesano", width: 28 },
       { header: "Nombre", key: "nombre", width: 28 },
       { header: "Descripción", key: "descripcion", width: 34 },
-      { header: "Precio base", key: "precioBase", width: 16 },
+      { header: "Precio artesano", key: "precioBase", width: 18 },
       { header: "Existencia", key: "existencia", width: 12 },
       { header: "Unidad", key: "unidad", width: 14 },
       { header: "Estado", key: "estado", width: 14 },

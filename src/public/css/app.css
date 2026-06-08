@@ -440,6 +440,52 @@ textarea:focus {
   gap: 8px;
 }
 
+.import-format-box {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: var(--app-surface-soft);
+  overflow-x: auto;
+}
+
+.import-format-box code {
+  color: var(--app-text);
+  white-space: nowrap;
+}
+
+.import-note {
+  display: grid;
+  gap: 4px;
+  min-height: 86px;
+  padding: 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: var(--app-surface-soft);
+}
+
+.import-note span,
+.import-preview {
+  color: var(--app-muted);
+}
+
+.import-preview {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface-soft);
+  font-weight: 600;
+}
+
+.import-textarea {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  line-height: 1.45;
+}
+
 .app-modal {
   border: 1px solid var(--app-border);
   border-radius: 20px;

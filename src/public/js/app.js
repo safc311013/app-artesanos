@@ -1,5 +1,56 @@
 document.addEventListener("DOMContentLoaded", () => {
   // =========================
+  // Importación de productos
+  // =========================
+  const importarForm = document.getElementById("importarProductosForm");
+  const importarSelect = document.getElementById("importarArtesanoSelect");
+  const importarCsv = document.getElementById("importarProductosCsv");
+  const importarPreview = document.getElementById("importarProductosPreview");
+  const importarConfirmBtn = document.getElementById("importarProductosConfirmBtn");
+
+  function contarLineasProductos() {
+    if (!importarCsv) return 0;
+
+    const lineas = importarCsv.value
+      .split(/\r?\n/)
+      .map((linea) => linea.trim())
+      .filter((linea) => linea !== "");
+
+    return Math.max(lineas.length - 1, 0);
+  }
+
+  function actualizarPreviewImportacion() {
+    if (!importarPreview || !importarSelect || !importarConfirmBtn) return;
+
+    const artesanoNombre = importarSelect.options[importarSelect.selectedIndex]?.text || "";
+    const totalProductos = contarLineasProductos();
+
+    if (!importarSelect.value) {
+      importarPreview.textContent = "Selecciona un artesano existente para asignarle la carga.";
+      importarConfirmBtn.dataset.confirmText =
+        "Selecciona un artesano antes de importar productos.";
+      return;
+    }
+
+    if (totalProductos === 0) {
+      importarPreview.textContent = `No hay productos listos para importar a ${artesanoNombre}.`;
+      importarConfirmBtn.dataset.confirmText =
+        "Agrega al menos una línea de producto debajo del encabezado.";
+      return;
+    }
+
+    importarPreview.textContent = `${totalProductos} producto${totalProductos === 1 ? "" : "s"} se asignarán a ${artesanoNombre}.`;
+    importarConfirmBtn.dataset.confirmText =
+      `Se crearán ${totalProductos} producto${totalProductos === 1 ? "" : "s"} para ${artesanoNombre}. Esta acción no se puede deshacer automáticamente.`;
+  }
+
+  if (importarForm && importarSelect && importarCsv) {
+    actualizarPreviewImportacion();
+    importarSelect.addEventListener("change", actualizarPreviewImportacion);
+    importarCsv.addEventListener("input", actualizarPreviewImportacion);
+  }
+
+  // =========================
   // Confirm modal global
   // =========================
   const confirmModalEl = document.getElementById("confirmActionModal");
@@ -18,6 +69,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!trigger) return;
 
       event.preventDefault();
+
+      if (trigger === importarConfirmBtn) {
+        actualizarPreviewImportacion();
+
+        if (!importarSelect.value) {
+          importarSelect.focus();
+          return;
+        }
+
+        if (contarLineasProductos() === 0) {
+          importarCsv.focus();
+          return;
+        }
+      }
 
       currentForm = null;
       currentHref = null;

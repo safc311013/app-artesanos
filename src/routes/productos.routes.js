@@ -4,6 +4,8 @@ const productosController = require("../controllers/productos.controller");
 
 router.get("/", productosController.listarProductos);
 router.get("/nuevo", productosController.formNuevoProducto);
+router.get("/importar/formato", productosController.descargarFormatoImportacion);
+router.post("/importar", productosController.importarProductos);
 router.post("/", productosController.crearProducto);
 router.get("/:id/editar", productosController.formEditarProducto);
 router.put("/:id", productosController.actualizarProducto);

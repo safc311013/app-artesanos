@@ -7,6 +7,12 @@
   </div>
 
   <div class="page-actions">
+    <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalFormatoImportacion">
+      Formato de importación
+    </button>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImportarProductos">
+      Importar productos
+    </button>
     <a href="/productos/nuevo" class="btn btn-primary">Nuevo producto</a>
   </div>
 </div>
@@ -53,6 +59,116 @@
   </div>
 </div>
 
+<div class="modal fade" id="modalFormatoImportacion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title">Formato para importar productos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="text-muted">
+          Usa este encabezado exacto. Cada línea después del encabezado será un producto para el artesano que selecciones.
+        </p>
+
+        <div class="import-format-box">
+          <code>nombre,descripcion,precioArtesano,existencia,unidad,activo</code>
+          <code>"Camino de mesa bordado","Algodon bordado a mano",450.00,8,pieza,si</code>
+          <code>"Servilleta bordada","Paquete con 4 piezas",280.00,12,paquete,si</code>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <div class="import-note">
+              <strong>precioArtesano</strong>
+              <span>Usa pesos con punto decimal, por ejemplo 450.00.</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="import-note">
+              <strong>activo</strong>
+              <span>Acepta si/no, true/false o 1/0.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0">
+        <a href="/productos/importar/formato" class="btn btn-outline-dark">Descargar CSV</a>
+        <button type="button" class="btn btn-success" data-bs-target="#modalImportarProductos" data-bs-toggle="modal">
+          Cargar productos
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalImportarProductos" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <form action="/productos/importar" method="POST" id="importarProductosForm">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">Importar productos por artesano</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-5">
+              <label class="form-label">Artesano existente</label>
+              <select name="artesanoId" class="form-select" id="importarArtesanoSelect" required>
+                <option value="">Selecciona un artesano</option>
+                <% artesanos.filter(artesano => artesano.activo).forEach(artesano => { %>
+                  <option value="<%= artesano.id %>"><%= artesano.nombre %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="col-md-7">
+              <label class="form-label">Resumen</label>
+              <div class="import-preview" id="importarProductosPreview">
+                Selecciona un artesano y pega el CSV para revisar la carga.
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Productos en CSV</label>
+              <textarea
+                name="csvProductos"
+                class="form-control import-textarea"
+                id="importarProductosCsv"
+                rows="11"
+                required
+                spellcheck="false"
+              >nombre,descripcion,precioArtesano,existencia,unidad,activo
+"Camino de mesa bordado","Algodon bordado a mano",450.00,8,pieza,si
+"Servilleta bordada","Paquete con 4 piezas",280.00,12,paquete,si</textarea>
+              <div class="form-text">No incluyas el artesano en el CSV; se asignará al artesano seleccionado arriba.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button
+            type="button"
+            class="btn btn-success"
+            id="importarProductosConfirmBtn"
+            data-confirm-trigger
+            data-confirm-title="Confirmar importación"
+            data-confirm-text="Se importarán los productos para el artesano seleccionado. Revisa el formato antes de continuar."
+            data-confirm-button="Importar productos"
+            data-confirm-class="btn-success"
+          >
+            Revisar e importar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <% if (productos.length === 0) { %>
   <div class="empty-state">No hay productos registrados con ese filtro.</div>
 <% } else { %>
@@ -64,7 +180,7 @@
             <th>ID</th>
             <th>Producto</th>
             <th>Artesano</th>
-            <th>Precio base</th>
+            <th>Precio artesano</th>
             <th>Existencia</th>
             <th>Unidad</th>
             <th>Estado</th>
@@ -161,7 +277,7 @@
                         </div>
 
                         <div class="col-md-6">
-                          <label class="form-label">Precio base</label>
+                          <label class="form-label">Precio artesano</label>
                           <input type="number" name="precioBase" class="form-control" step="0.01" min="0" value="<%= producto.precioBasePesos %>" required>
                         </div>
 

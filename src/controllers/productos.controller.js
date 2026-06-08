@@ -13,6 +13,137 @@ function limpiarTexto(valor) {
   return valor && valor.trim() !== "" ? valor.trim() : null;
 }
 
+function escaparCsv(valor) {
+  const texto = String(valor ?? "");
+  return `"${texto.replace(/"/g, '""')}"`;
+}
+
+function dividirLineaCsv(linea) {
+  const columnas = [];
+  let actual = "";
+  let dentroComillas = false;
+
+  for (let i = 0; i < linea.length; i += 1) {
+    const caracter = linea[i];
+    const siguiente = linea[i + 1];
+
+    if (caracter === '"' && dentroComillas && siguiente === '"') {
+      actual += '"';
+      i += 1;
+      continue;
+    }
+
+    if (caracter === '"') {
+      dentroComillas = !dentroComillas;
+      continue;
+    }
+
+    if (caracter === "," && !dentroComillas) {
+      columnas.push(actual.trim());
+      actual = "";
+      continue;
+    }
+
+    actual += caracter;
+  }
+
+  columnas.push(actual.trim());
+  return columnas;
+}
+
+function parsearBooleano(valor) {
+  const normalizado = String(valor ?? "").trim().toLowerCase();
+
+  if (["si", "s", "true", "1", "activo", "activa"].includes(normalizado)) {
+    return true;
+  }
+
+  if (["no", "n", "false", "0", "inactivo", "inactiva"].includes(normalizado)) {
+    return false;
+  }
+
+  return null;
+}
+
+function parsearProductosCsv(csvTexto) {
+  const lineas = String(csvTexto || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter((linea) => linea !== "");
+
+  const errores = [];
+
+  if (lineas.length < 2) {
+    return {
+      productos: [],
+      errores: ["Agrega el encabezado y al menos una línea de producto."],
+    };
+  }
+
+  const encabezadosEsperados = ["nombre", "descripcion", "precioArtesano", "existencia", "unidad", "activo"];
+  const encabezados = dividirLineaCsv(lineas[0]);
+
+  const encabezadoValido =
+    encabezados.length === encabezadosEsperados.length &&
+    encabezados.every((encabezado, index) => {
+      if (index === 2) {
+        return encabezado === "precioArtesano" || encabezado === "precioBase";
+      }
+
+      return encabezado === encabezadosEsperados[index];
+    });
+
+  if (!encabezadoValido) {
+    errores.push(`El encabezado debe ser exactamente: ${encabezadosEsperados.join(",")}`);
+  }
+
+  const productos = [];
+
+  lineas.slice(1).forEach((linea, index) => {
+    const numeroLinea = index + 2;
+    const columnas = dividirLineaCsv(linea);
+
+    if (columnas.length !== encabezadosEsperados.length) {
+      errores.push(`Línea ${numeroLinea}: debe tener ${encabezadosEsperados.length} columnas.`);
+      return;
+    }
+
+    const [nombre, descripcion, precioArtesano, existencia, unidad, activo] = columnas;
+    const precioNumero = parseFloat(precioArtesano);
+    const existenciaNumero = parseInt(existencia, 10);
+    const activoBooleano = parsearBooleano(activo);
+
+    if (!nombre || nombre.trim() === "") {
+      errores.push(`Línea ${numeroLinea}: el nombre es obligatorio.`);
+    }
+
+    if (isNaN(precioNumero) || precioNumero < 0) {
+      errores.push(`Línea ${numeroLinea}: precioArtesano debe ser un número mayor o igual a 0.`);
+    }
+
+    if (isNaN(existenciaNumero) || existenciaNumero < 0) {
+      errores.push(`Línea ${numeroLinea}: existencia debe ser un entero mayor o igual a 0.`);
+    }
+
+    if (activoBooleano === null) {
+      errores.push(`Línea ${numeroLinea}: activo debe ser si/no, true/false o 1/0.`);
+    }
+
+    productos.push({
+      nombre: nombre.trim(),
+      descripcion: limpiarTexto(descripcion),
+      precioBase: convertirPesosACentavos(precioArtesano),
+      existencia: existenciaNumero,
+      unidad: unidad && unidad.trim() !== "" ? unidad.trim() : "pieza",
+      activo: activoBooleano,
+    });
+  });
+
+  return { productos, errores };
+}
+
 function buildQueryString(params) {
   const searchParams = new URLSearchParams();
 
@@ -159,7 +290,7 @@ exports.crearProducto = async (req, res) => {
     }
 
     if (isNaN(precioNumero) || precioNumero < 0) {
-      errores.push("El precio base debe ser un número válido mayor o igual a 0.");
+      errores.push("El precio artesano debe ser un número válido mayor o igual a 0.");
     }
 
     if (isNaN(existenciaNumero) || existenciaNumero < 0) {
@@ -217,6 +348,73 @@ exports.crearProducto = async (req, res) => {
   }
 };
 
+exports.descargarFormatoImportacion = (req, res) => {
+  const filas = [
+    ["nombre", "descripcion", "precioArtesano", "existencia", "unidad", "activo"],
+    ["Camino de mesa bordado", "Algodón bordado a mano", "450.00", "8", "pieza", "si"],
+    ["Servilleta bordada", "Paquete con 4 piezas", "280.00", "12", "paquete", "si"],
+  ];
+
+  const contenido = filas.map((fila) => fila.map(escaparCsv).join(",")).join("\n");
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="formato-productos.csv"');
+  res.send(contenido);
+};
+
+exports.importarProductos = async (req, res) => {
+  try {
+    const artesanoIdNumero = parseInt(req.body.artesanoId, 10);
+    const csvProductos = req.body.csvProductos || "";
+    const errores = [];
+
+    if (!req.body.artesanoId || isNaN(artesanoIdNumero)) {
+      errores.push("Selecciona un artesano existente.");
+    }
+
+    const artesano = !isNaN(artesanoIdNumero)
+      ? await prisma.artesano.findUnique({
+          where: { id: artesanoIdNumero },
+        })
+      : null;
+
+    if (req.body.artesanoId && !artesano) {
+      errores.push("El artesano seleccionado no existe.");
+    }
+
+    if (artesano && !artesano.activo) {
+      errores.push("El artesano seleccionado está inactivo.");
+    }
+
+    const resultado = parsearProductosCsv(csvProductos);
+    errores.push(...resultado.errores);
+
+    if (resultado.productos.length > 100) {
+      errores.push("Importa máximo 100 productos por carga.");
+    }
+
+    if (errores.length > 0) {
+      return res.redirect(`/productos?error=${encodeURIComponent(errores.join(" "))}`);
+    }
+
+    await prisma.producto.createMany({
+      data: resultado.productos.map((producto) => ({
+        ...producto,
+        artesanoId: artesanoIdNumero,
+      })),
+    });
+
+    res.redirect(
+      `/productos?artesanoId=${artesanoIdNumero}&ok=${encodeURIComponent(
+        `${resultado.productos.length} productos importados correctamente para ${artesano.nombre}`
+      )}`
+    );
+  } catch (error) {
+    console.error("Error al importar productos:", error);
+    res.redirect("/productos?error=No se pudieron importar los productos");
+  }
+};
+
 exports.formEditarProducto = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -269,7 +467,7 @@ exports.actualizarProducto = async (req, res) => {
     }
 
     if (isNaN(precioNumero) || precioNumero < 0) {
-      errores.push("El precio base debe ser un número válido mayor o igual a 0.");
+      errores.push("El precio artesano debe ser un número válido mayor o igual a 0.");
     }
 
     if (isNaN(existenciaNumero) || existenciaNumero < 0) {
